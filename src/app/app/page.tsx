@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useChainId, useSendTransaction } from "wagmi";
+import { useAccount, useChainId, useSendTransaction, useWriteContract, useWalletClient } from "wagmi";
 import { ConnectPrompt } from "@/components/shared/connect-prompt";
 import { AssetScan } from "@/components/strategy/asset-scan";
 import { RiskSelector } from "@/components/strategy/risk-selector";
@@ -27,6 +27,7 @@ export default function StrategyPage() {
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
   const { sendTransactionAsync } = useSendTransaction();
+  const { data: walletClient } = useWalletClient();
 
   if (!isConnected) {
     return <ConnectPrompt />;
@@ -101,7 +102,7 @@ export default function StrategyPage() {
   };
 
   const handleExecute = async () => {
-    if (!strategy || !address) return;
+    if (!strategy || !address || !walletClient) return;
     setIsExecuting(true);
 
     const steps: ExecutionStep[] = strategy.allocations.map((a) => ({
@@ -149,23 +150,64 @@ export default function StrategyPage() {
           continue;
         }
 
-        steps[i].status = "approving";
+        // Step: Approve token spending if needed
+        if (quote.estimate?.approvalAddress) {
+          steps[i].status = "approving";
+          setExecutionSteps([...steps]);
+
+          const erc20Abi = [
+            {
+              name: "approve",
+              type: "function",
+              inputs: [
+                { name: "spender", type: "address" },
+                { name: "amount", type: "uint256" },
+              ],
+              outputs: [{ name: "", type: "bool" }],
+              stateMutability: "nonpayable",
+            },
+          ] as const;
+
+          console.log("Approving token:", fromToken, "for", quote.estimate.approvalAddress);
+
+          const approvalHash = await walletClient.writeContract({
+            address: fromToken as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [
+              quote.estimate.approvalAddress as `0x${string}`,
+              BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
+            ],
+            chain: walletClient.chain,
+            account: address,
+          });
+
+          console.log("Approval tx:", approvalHash);
+          // Wait a bit for approval to confirm
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+
+        // Step: Execute the deposit transaction
+        steps[i].status = "executing";
         setExecutionSteps([...steps]);
 
         const txRequest = quote.transactionRequest;
-        console.log("Sending tx:", txRequest);
+        console.log("Sending deposit tx:", txRequest);
 
-        const txHash = await sendTransactionAsync({
+        const txHash = await walletClient.sendTransaction({
           to: txRequest.to as `0x${string}`,
           data: txRequest.data as `0x${string}`,
           value: BigInt(txRequest.value || "0"),
-          chainId: Number(txRequest.chainId),
+          chain: walletClient.chain,
+          account: address,
+          gas: txRequest.gasLimit ? BigInt(txRequest.gasLimit) : undefined,
         });
 
         steps[i].status = "completed";
         steps[i].txHash = txHash;
         setExecutionSteps([...steps]);
       } catch (err) {
+        console.error("Execution error:", err);
         steps[i].status = "failed";
         steps[i].error = err instanceof Error ? err.message : "Transaction failed";
         setExecutionSteps([...steps]);
