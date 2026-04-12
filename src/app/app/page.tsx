@@ -140,10 +140,11 @@ export default function StrategyPage() {
 
         const quoteRes = await fetch(`/api/quote?${quoteParams}`);
         const quote = await quoteRes.json();
+        console.log("Quote response:", JSON.stringify(quote, null, 2));
 
-        if (quote.error) {
+        if (quote.error || !quote.transactionRequest) {
           steps[i].status = "failed";
-          steps[i].error = quote.error;
+          steps[i].error = quote.error || quote.message || "No transaction data returned";
           setExecutionSteps([...steps]);
           continue;
         }
@@ -151,11 +152,14 @@ export default function StrategyPage() {
         steps[i].status = "approving";
         setExecutionSteps([...steps]);
 
+        const txRequest = quote.transactionRequest;
+        console.log("Sending tx:", txRequest);
+
         const txHash = await sendTransactionAsync({
-          to: quote.transactionRequest.to as `0x${string}`,
-          data: quote.transactionRequest.data as `0x${string}`,
-          value: BigInt(quote.transactionRequest.value || "0"),
-          chainId: quote.transactionRequest.chainId,
+          to: txRequest.to as `0x${string}`,
+          data: txRequest.data as `0x${string}`,
+          value: BigInt(txRequest.value || "0"),
+          chainId: Number(txRequest.chainId),
         });
 
         steps[i].status = "completed";

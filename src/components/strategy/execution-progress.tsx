@@ -51,6 +51,9 @@ export function ExecutionProgress({ steps }: { steps: ExecutionStep[] }) {
               </div>
               <div className="flex items-center gap-3">
                 <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
+                {step.error && (
+                  <span className="text-xs text-danger max-w-[200px] truncate" title={step.error}>{step.error}</span>
+                )}
                 {step.txHash && (
                   <a href={`https://basescan.org/tx/${step.txHash}`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">View Tx</a>
                 )}
