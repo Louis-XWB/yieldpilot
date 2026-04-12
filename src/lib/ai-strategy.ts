@@ -82,16 +82,19 @@ export async function generateStrategy(
   userAssets: string,
   preferredChainId?: number
 ): Promise<Strategy> {
-  const filtered = filterVaults(vaults, riskLevel);
+  let filtered = filterVaults(vaults, riskLevel);
+
+  // If user has a preferred chain, filter to only that chain's vaults first
+  // Fall back to all vaults if fewer than 3 options on preferred chain
+  if (preferredChainId) {
+    const chainVaults = filtered.filter((v) => v.chainId === preferredChainId);
+    if (chainVaults.length >= 3) {
+      filtered = chainVaults;
+    }
+  }
 
   const sortField = RISK_FILTERS[riskLevel].apySortField;
   const sorted = [...filtered].sort((a, b) => {
-    // Boost preferred chain vaults to the top
-    if (preferredChainId) {
-      const aOnChain = a.chainId === preferredChainId ? 1 : 0;
-      const bOnChain = b.chainId === preferredChainId ? 1 : 0;
-      if (aOnChain !== bOnChain) return bOnChain - aOnChain;
-    }
     if (sortField === "apy30d") {
       return (b.analytics.apy30d ?? 0) - (a.analytics.apy30d ?? 0);
     }
