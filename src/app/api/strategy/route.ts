@@ -10,10 +10,12 @@ export async function POST(request: NextRequest) {
       riskLevel,
       totalAmountUsd,
       userAssets,
+      preferredChainId,
     }: {
       riskLevel: RiskLevel;
       totalAmountUsd: number;
       userAssets: string;
+      preferredChainId?: number;
     } = body;
 
     if (!riskLevel || !totalAmountUsd) {
@@ -31,7 +33,8 @@ export async function POST(request: NextRequest) {
       vaults,
       riskLevel,
       totalAmountUsd,
-      userAssets || "Unknown"
+      userAssets || "Unknown",
+      preferredChainId
     );
 
     return NextResponse.json(strategy);

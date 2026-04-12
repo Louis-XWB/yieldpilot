@@ -79,12 +79,19 @@ export async function generateStrategy(
   vaults: Vault[],
   riskLevel: RiskLevel,
   totalAmountUsd: number,
-  userAssets: string
+  userAssets: string,
+  preferredChainId?: number
 ): Promise<Strategy> {
   const filtered = filterVaults(vaults, riskLevel);
 
   const sortField = RISK_FILTERS[riskLevel].apySortField;
   const sorted = [...filtered].sort((a, b) => {
+    // Boost preferred chain vaults to the top
+    if (preferredChainId) {
+      const aOnChain = a.chainId === preferredChainId ? 1 : 0;
+      const bOnChain = b.chainId === preferredChainId ? 1 : 0;
+      if (aOnChain !== bOnChain) return bOnChain - aOnChain;
+    }
     if (sortField === "apy30d") {
       return (b.analytics.apy30d ?? 0) - (a.analytics.apy30d ?? 0);
     }
@@ -133,11 +140,16 @@ Rules:
 - For conservative: prioritize stability (30d APY consistency), blue-chip protocols
 - For balanced: mix stability and growth
 - For aggressive: prioritize highest total APY, acceptable to include smaller vaults
-- Consider protocol diversification (don't put everything in one protocol)`;
+- Consider protocol diversification (don't put everything in one protocol)
+- IMPORTANT: If the user has funds on a specific chain, STRONGLY prefer vaults on that same chain to avoid cross-chain fees. Only use other chains if the preferred chain lacks good options.`;
+
+  const chainHint = preferredChainId
+    ? `\nUser's funds are on chain ID ${preferredChainId}. STRONGLY prefer vaults on this chain to minimize fees.`
+    : "";
 
   const userPrompt = `Risk Level: ${riskLevel}
 Total Investment: $${totalAmountUsd.toLocaleString()}
-User Assets: ${userAssets}
+User Assets: ${userAssets}${chainHint}
 
 Available Vaults (pre-filtered for risk level):
 ${vaultSummary}

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount } from "wagmi";
-import { useSendTransaction } from "wagmi";
+import { useAccount, useChainId, useSendTransaction } from "wagmi";
 import { ConnectPrompt } from "@/components/shared/connect-prompt";
 import { AssetScan } from "@/components/strategy/asset-scan";
 import { RiskSelector } from "@/components/strategy/risk-selector";
@@ -13,6 +12,7 @@ import { RiskLevel, Strategy, ExecutionStep } from "@/lib/types";
 
 export default function StrategyPage() {
   const { isConnected, address } = useAccount();
+  const chainId = useChainId();
   const [riskLevel, setRiskLevel] = useState<RiskLevel | null>(null);
   const [investAmount, setInvestAmount] = useState<string>("1000");
   const [strategy, setStrategy] = useState<Strategy | null>(null);
@@ -35,7 +35,8 @@ export default function StrategyPage() {
         body: JSON.stringify({
           riskLevel,
           totalAmountUsd: Number(investAmount),
-          userAssets: `${investAmount} USD available`,
+          userAssets: `${investAmount} USD available on chain ${chainId}`,
+          preferredChainId: chainId,
         }),
       });
       const data = await res.json();
