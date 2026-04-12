@@ -9,6 +9,7 @@ import { LoadingAnimation } from "@/components/shared/loading-animation";
 import { StrategyResult } from "@/components/strategy/strategy-result";
 import { ExecutionProgress } from "@/components/strategy/execution-progress";
 import { RiskLevel, Strategy, ExecutionStep } from "@/lib/types";
+import { StrategyComparison } from "@/components/strategy/strategy-comparison";
 
 export default function StrategyPage() {
   const { isConnected, address } = useAccount();
@@ -17,6 +18,12 @@ export default function StrategyPage() {
   const [investAmount, setInvestAmount] = useState<string>("1000");
   const [strategy, setStrategy] = useState<Strategy | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
+  const [comparisonStrategies, setComparisonStrategies] = useState<{
+    conservative: Strategy | null;
+    balanced: Strategy | null;
+    aggressive: Strategy | null;
+  }>({ conservative: null, balanced: null, aggressive: null });
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
   const { sendTransactionAsync } = useSendTransaction();
@@ -47,6 +54,50 @@ export default function StrategyPage() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleCompare = async () => {
+    if (!investAmount) return;
+    setIsComparing(true);
+    setStrategy(null);
+    setComparisonStrategies({ conservative: null, balanced: null, aggressive: null });
+
+    const levels = ["conservative", "balanced", "aggressive"] as const;
+
+    // Fetch all 3 in parallel
+    const promises = levels.map(async (level) => {
+      try {
+        const res = await fetch("/api/strategy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            riskLevel: level,
+            totalAmountUsd: Number(investAmount),
+            userAssets: `${investAmount} USD available on chain ${chainId}`,
+            preferredChainId: chainId,
+          }),
+        });
+        const data = await res.json();
+        if (data.error) return null;
+        return data as Strategy;
+      } catch {
+        return null;
+      }
+    });
+
+    const results = await Promise.all(promises);
+    setComparisonStrategies({
+      conservative: results[0],
+      balanced: results[1],
+      aggressive: results[2],
+    });
+    setIsComparing(false);
+  };
+
+  const handleSelectFromComparison = (selected: Strategy) => {
+    setStrategy(selected);
+    setRiskLevel(selected.risk_level);
+    setComparisonStrategies({ conservative: null, balanced: null, aggressive: null });
   };
 
   const handleExecute = async () => {
@@ -143,15 +194,30 @@ export default function StrategyPage() {
                 className="w-full px-4 py-3 rounded-xl bg-background border border-card-border text-text-primary font-mono text-lg focus:border-primary focus:outline-none transition-colors"
                 placeholder="1000" min="1" />
             </div>
-            <button onClick={handleGenerate} disabled={isGenerating}
-              className="px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-50 rounded-xl text-white font-semibold transition-all hover:shadow-lg hover:shadow-primary/25">
-              {isGenerating ? "Generating..." : "Generate Strategy"}
-            </button>
+            <div className="flex gap-3">
+              <button onClick={handleGenerate} disabled={isGenerating || isComparing}
+                className="px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-50 rounded-xl text-white font-semibold transition-all hover:shadow-lg hover:shadow-primary/25">
+                {isGenerating ? "Generating..." : "Generate Strategy"}
+              </button>
+              <button onClick={handleCompare} disabled={isGenerating || isComparing}
+                className="px-8 py-3 border border-primary/50 hover:border-primary disabled:opacity-50 rounded-xl text-primary font-semibold transition-all">
+                {isComparing ? "Comparing..." : "Compare All 3"}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {isGenerating && <LoadingAnimation text="AI is analyzing 672+ vaults across 20+ protocols..." />}
+
+      {isComparing && <LoadingAnimation text="AI is comparing 3 risk strategies..." />}
+
+      {comparisonStrategies.conservative && !isComparing && !strategy && (
+        <StrategyComparison
+          strategies={comparisonStrategies}
+          onSelect={handleSelectFromComparison}
+        />
+      )}
 
       {strategy && !isGenerating && executionSteps.length === 0 && (
         <StrategyResult
