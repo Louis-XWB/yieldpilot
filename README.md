@@ -8,7 +8,7 @@
 
 **Hackathon:** DeFi Mullet Hackathon #1 | **Track:** AI x Earn
 
-[![YieldPilot Demo](https://img.youtube.com/vi/ForV81B27_Q/hqdefault.jpg)](https://youtu.be/ForV81B27_Q)
+[![YieldPilot](./public/YieldPilot.png)](https://youtu.be/ForV81B27_Q)
 
 ---
 
