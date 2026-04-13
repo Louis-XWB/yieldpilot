@@ -4,11 +4,11 @@
 
 **Live App:** https://yieldpilot-mu.vercel.app/
 
-**Demo Video:** https://www.youtube.com/watch?v=F6ZplAliL4U
+**Demo Video:** https://youtu.be/ForV81B27_Q
 
 **Hackathon:** DeFi Mullet Hackathon #1 | **Track:** AI x Earn
 
-[![YieldPilot Demo](https://img.youtube.com/vi/F6ZplAliL4U/hqdefault.jpg)](https://www.youtube.com/watch?v=F6ZplAliL4U)
+[![YieldPilot Demo](https://img.youtube.com/vi/ForV81B27_Q/hqdefault.jpg)](https://youtu.be/ForV81B27_Q)
 
 ---
 
