@@ -1,5 +1,11 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { http } from "wagmi";
+import { connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  metaMaskWallet,
+  injectedWallet,
+  walletConnectWallet,
+  rainbowWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+import { createConfig, http } from "wagmi";
 import {
   mainnet,
   base,
@@ -15,23 +21,44 @@ import {
   celo,
 } from "wagmi/chains";
 
-export const config = getDefaultConfig({
-  appName: "YieldPilot",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo",
-  chains: [
-    mainnet,
-    base,
-    arbitrum,
-    optimism,
-    polygon,
-    avalanche,
-    bsc,
-    gnosis,
-    linea,
-    scroll,
-    mantle,
-    celo,
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo";
+
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [
+        injectedWallet,
+        metaMaskWallet,
+        rainbowWallet,
+        walletConnectWallet,
+      ],
+    },
   ],
+  {
+    appName: "YieldPilot",
+    projectId,
+  }
+);
+
+const chains = [
+  mainnet,
+  base,
+  arbitrum,
+  optimism,
+  polygon,
+  avalanche,
+  bsc,
+  gnosis,
+  linea,
+  scroll,
+  mantle,
+  celo,
+] as const;
+
+export const config = createConfig({
+  connectors,
+  chains,
   transports: {
     [mainnet.id]: http("https://rpc.ankr.com/eth"),
     [base.id]: http("https://mainnet.base.org"),
