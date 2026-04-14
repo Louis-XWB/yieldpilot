@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useChainId, useSendTransaction, useWriteContract, useWalletClient } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { ConnectPrompt } from "@/components/shared/connect-prompt";
 import { AssetScan } from "@/components/strategy/asset-scan";
 import { RiskSelector } from "@/components/strategy/risk-selector";
@@ -26,8 +26,6 @@ export default function StrategyPage() {
   }>({ conservative: null, balanced: null, aggressive: null });
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
-  const { sendTransactionAsync } = useSendTransaction();
-  const { data: walletClient } = useWalletClient();
 
   if (!isConnected) {
     return <ConnectPrompt />;
@@ -101,8 +99,20 @@ export default function StrategyPage() {
     setComparisonStrategies({ conservative: null, balanced: null, aggressive: null });
   };
 
+  const getEthereum = () => {
+    const w = window as unknown as { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } };
+    return w.ethereum;
+  };
+
   const handleExecute = async () => {
-    if (!strategy || !address || !walletClient) return;
+    if (!strategy || !address) return;
+
+    const ethereum = getEthereum();
+    if (!ethereum) {
+      alert("No wallet detected. Please install MetaMask.");
+      return;
+    }
+
     setIsExecuting(true);
 
     const steps: ExecutionStep[] = strategy.allocations.map((a) => ({
@@ -150,61 +160,51 @@ export default function StrategyPage() {
           continue;
         }
 
-        // Step: Approve token spending if needed
+        // Step: Approve token spending via window.ethereum directly
         if (quote.estimate?.approvalAddress) {
           steps[i].status = "approving";
           setExecutionSteps([...steps]);
 
-          const erc20Abi = [
-            {
-              name: "approve",
-              type: "function",
-              inputs: [
-                { name: "spender", type: "address" },
-                { name: "amount", type: "uint256" },
-              ],
-              outputs: [{ name: "", type: "bool" }],
-              stateMutability: "nonpayable",
-            },
-          ] as const;
+          // ERC20 approve(spender, amount) function selector + encoded args
+          const spender = quote.estimate.approvalAddress.slice(2).padStart(64, "0");
+          const maxAmount = "f".repeat(64);
+          const approveData = `0x095ea7b3${spender}${maxAmount}`;
 
-          console.log("Approving token:", fromToken, "for", quote.estimate.approvalAddress);
+          console.log("Approving via window.ethereum:", fromToken);
 
-          const approvalHash = await walletClient.writeContract({
-            address: fromToken as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [
-              quote.estimate.approvalAddress as `0x${string}`,
-              BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
-            ],
-            chain: walletClient.chain,
-            account: address,
+          const approveTx = await ethereum.request({
+            method: "eth_sendTransaction",
+            params: [{
+              from: address,
+              to: fromToken,
+              data: approveData,
+            }],
           });
 
-          console.log("Approval tx:", approvalHash);
-          // Wait a bit for approval to confirm
-          await new Promise((r) => setTimeout(r, 3000));
+          console.log("Approval tx:", approveTx);
+          // Wait for approval to confirm
+          await new Promise((r) => setTimeout(r, 5000));
         }
 
-        // Step: Execute the deposit transaction
+        // Step: Execute the deposit transaction via window.ethereum
         steps[i].status = "executing";
         setExecutionSteps([...steps]);
 
         const txRequest = quote.transactionRequest;
-        console.log("Sending deposit tx:", txRequest);
+        console.log("Sending deposit tx via window.ethereum:", txRequest);
 
-        const txHash = await walletClient.sendTransaction({
-          to: txRequest.to as `0x${string}`,
-          data: txRequest.data as `0x${string}`,
-          value: BigInt(txRequest.value || "0"),
-          chain: walletClient.chain,
-          account: address,
-          gas: txRequest.gasLimit ? BigInt(txRequest.gasLimit) : undefined,
+        const txHash = await ethereum.request({
+          method: "eth_sendTransaction",
+          params: [{
+            from: address,
+            to: txRequest.to,
+            data: txRequest.data,
+            value: txRequest.value || "0x0",
+          }],
         });
 
         steps[i].status = "completed";
-        steps[i].txHash = txHash;
+        steps[i].txHash = txHash as string;
         setExecutionSteps([...steps]);
       } catch (err) {
         console.error("Execution error:", err);
