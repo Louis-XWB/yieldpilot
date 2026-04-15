@@ -4,14 +4,14 @@
 
 **Live App:** https://yieldpilot-mu.vercel.app/
 
-**Demo Video:** https://youtu.be/ForV81B27_Q
+**Demo Video:** https://youtu.be/NRvkOinC0jg
 
 **Hackathon:** DeFi Mullet Hackathon #1 | **Track:** AI x Earn
 
 **Verified On-Chain:**
 - [Test Wallet (Base)](https://basescan.org/address/0x4568b760c55FAEA0129139b863124f19962B9cDE) — `0x4568b760c55FAEA0129139b863124f19962B9cDE`
 
-[![YieldPilot](./public/YieldPilot.png)](https://youtu.be/ForV81B27_Q)
+[![YieldPilot](./public/YieldPilot.png)](https://youtu.be/NRvkOinC0jg)
 
 ---
 
