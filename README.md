@@ -311,6 +311,27 @@ Add to your MCP client config (e.g., `~/.claude/mcp.json`):
 npm run mcp
 ```
 
+## Claude Code Skill
+
+YieldPilot also ships as a Claude Code slash command. Add this repo to your project and use `/yieldpilot` to interact with DeFi yield data conversationally.
+
+```
+> /yieldpilot
+
+What would you like to do?
+1. Find vaults — search by chain, APY, TVL, protocol
+2. Generate strategy — AI-powered yield allocation
+3. Check portfolio — view wallet positions
+4. Show chains / protocols
+```
+
+Example interactions:
+```
+> /yieldpilot find stablecoin vaults on Base with APY > 3%
+> /yieldpilot generate a conservative strategy for $5000
+> /yieldpilot check portfolio for 0x4568b760c55FAEA0129139b863124f19962B9cDE
+```
+
 ## What's Next
 
 - Auto-rebalancing execution (currently shows suggestions only)
