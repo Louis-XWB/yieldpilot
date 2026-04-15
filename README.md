@@ -1,6 +1,6 @@
 # YieldPilot — AI DeFi Fund Manager
 
-> Your private AI fund manager for DeFi yield. Powered by [LI.FI](https://li.fi/) Earn.
+> Your private AI fund manager for DeFi yield. Business in the front, yield in the back. Powered by [LI.FI](https://li.fi/) Earn.
 
 **Live App:** https://yieldpilot-mu.vercel.app/
 
@@ -8,78 +8,195 @@
 
 **Hackathon:** DeFi Mullet Hackathon #1 | **Track:** AI x Earn
 
+**Verified On-Chain:**
+- [Test Wallet (Base)](https://basescan.org/address/0x4568b760c55FAEA0129139b863124f19962B9cDE) — `0x4568b760c55FAEA0129139b863124f19962B9cDE`
+
 [![YieldPilot](./public/YieldPilot.png)](https://youtu.be/ForV81B27_Q)
 
 ---
 
-## What is YieldPilot?
+## Why YieldPilot
 
-YieldPilot is an AI-powered DeFi fund manager that analyzes 672+ vaults across 20+ protocols and 17 chains, generates optimal yield strategies based on your risk profile, and executes deposits with one click via LI.FI Composer.
+DeFi yield is fragmented. Users must manually compare APYs across 20+ protocols and 17 chains, assess risk for each vault, decide allocation percentages, and execute multiple transactions across different networks. YieldPilot automates this entire workflow with an AI strategy engine that analyzes, recommends, and executes — while giving users full transparency into every decision.
 
-Users see a simple 3-step flow. The AI handles the complexity behind the scenes — analyzing APY trends, TVL, protocol risk, and diversification to build a portfolio tailored to your preferences.
+### Key Features
 
-## Features
+**AI Strategy Engine**
+- Consumes real-time vault data from LI.FI Earn API (APY, TVL, protocol, tags, chain)
+- Applies risk-based filtering rules (Conservative / Balanced / Aggressive)
+- Generates diversified portfolio allocations with per-vault reasoning
+- Every recommendation includes transparent AI analysis — no black box
 
-- **AI Strategy Engine** — Analyzes vault data (APY, TVL, protocol, tags) and generates risk-adjusted portfolio allocations with transparent reasoning
-- **Risk Profiles** — Conservative / Balanced / Aggressive with different filtering rules for TVL, protocols, diversification, and APY preferences
-- **One-Click Execution** — LI.FI Composer handles swap + bridge + deposit in a single transaction
-- **Portfolio Dashboard** — Real-time tracking of all yield positions across protocols and chains
-- **Chain-Aware** — Prioritizes vaults on user's current chain to minimize cross-chain fees
+**Strategy Comparison Mode**
+- Generates all 3 risk profiles simultaneously in parallel
+- Side-by-side comparison of APY, vault count, chain diversification, and risk scores
+- Users select the best strategy with full context before executing
 
-## How It Works
+**One-Click Cross-Chain Execution**
+- LI.FI Composer handles swap + bridge + deposit in a single transaction
+- ERC-20 token approval + vault deposit in sequential steps
+- Real-time execution progress with per-step status tracking
+- Supports any-token to any-vault deposits across all supported chains
 
-```
-1. Connect Wallet    → Auto-scan assets + existing DeFi positions
-2. Select Risk       → Conservative / Balanced / Aggressive
-3. Generate Strategy → AI analyzes 672+ vaults, outputs allocation plan
-4. Execute           → Composer builds transactions, user signs once per vault
-5. Monitor           → Dashboard tracks positions + AI suggests rebalancing
-```
+**Chain-Aware Intelligence**
+- Detects user's current chain and prioritizes same-chain vaults
+- Minimizes cross-chain fees by filtering vaults to the user's network
+- Falls back to cross-chain options only when the preferred chain lacks quality vaults
 
-## LI.FI Earn API Integration
+**Portfolio Dashboard**
+- Real-time position tracking via LI.FI Earn Portfolio API
+- Portfolio value summary, active positions count, protocol diversification
+- 30-day yield performance chart
+- AI rebalancing suggestions when better opportunities appear
 
-YieldPilot uses **all 7 LI.FI Earn endpoints**:
+### Integration Depth
 
-| Feature | Endpoint | Service |
-|---------|----------|---------|
-| Vault discovery + filtering | `GET /v1/earn/vaults` | Earn Data API |
-| Vault detail | `GET /v1/earn/vaults/:network/:address` | Earn Data API |
-| Supported chains | `GET /v1/earn/chains` | Earn Data API |
-| Supported protocols | `GET /v1/earn/protocols` | Earn Data API |
-| User positions | `GET /v1/earn/portfolio/:addr/positions` | Earn Data API |
-| Build deposit tx | `GET /v1/quote` | Composer |
-| Build redeem tx | `GET /v1/quote` | Composer |
-
-## Tech Stack
-
-- **Framework:** Next.js 14 (App Router, TypeScript)
-- **AI:** OpenAI GPT-4o-mini (strategy engine)
-- **DeFi:** LI.FI Earn Data API + LI.FI Composer
-- **Wallet:** wagmi v2 + RainbowKit
-- **UI:** Tailwind CSS + shadcn/ui + Framer Motion
-- **Charts:** Recharts
-- **Deploy:** Vercel
+| Metric | Value |
+|--------|-------|
+| LI.FI Earn API endpoints used | **7 / 7** (100% coverage) |
+| Vault universe analyzed | **672+** vaults |
+| Supported chains | **17** (Base, Ethereum, Arbitrum, Optimism, Polygon, etc.) |
+| Supported protocols | **11** (Morpho, Aave, Euler, Pendle, Ethena, etc.) |
+| Risk profiles | **3** (Conservative, Balanced, Aggressive) |
+| AI filtering dimensions | **5** (tags, TVL, protocol, diversification, APY trend) |
 
 ## Architecture
 
 ```
-Frontend (Next.js 14)
-├── Landing Page          — Brand page with live vault stats
-├── Strategy Engine       — Asset scan → Risk select → AI strategy → Execute
-└── Dashboard             — Portfolio monitoring + rebalance suggestions
-        │
-        ├── API Routes (server-side, protects API keys)
-        │   ├── /api/vaults      → earn.li.fi (no auth)
-        │   ├── /api/chains      → earn.li.fi (no auth)
-        │   ├── /api/protocols   → earn.li.fi (no auth)
-        │   ├── /api/portfolio   → earn.li.fi (no auth)
-        │   ├── /api/strategy    → OpenAI + Earn Data API
-        │   └── /api/quote       → li.quest (API key server-side)
-        │
-        ├── LI.FI Earn Data API (earn.li.fi)
-        ├── LI.FI Composer (li.quest)
-        └── OpenAI API
+User <-> [Web UI: Landing + Strategy Engine + Dashboard]
+              |
+         [Next.js API Routes (server-side, protects API keys)]
+         +--------+-----------+-----------+
+         |        |           |           |
+         v        v           v           v
+    Earn Data   Composer    OpenAI     Portfolio
+    API         API         API        API
+    (no auth)   (API key)   (API key)  (no auth)
+         |        |           |           |
+         +--------+-----------+-----------+
+              |
+    [LI.FI Infrastructure]
+    672+ vaults | 20+ protocols | 17 chains
 ```
+
+### Data Flow
+
+```
+PHASE 1: DISCOVER
+  Fetch all vaults with pagination (earn.li.fi/v1/earn/vaults)
+  Fetch chains + protocols for metadata
+  Scan user portfolio for existing positions
+
+PHASE 2: ANALYZE
+  Filter vaults by risk level (tags, TVL, protocol whitelist)
+  Sort by APY preference (30d average for conservative, total for aggressive)
+  Prioritize user's current chain to minimize fees
+  Send top 50 candidates to AI for portfolio construction
+
+PHASE 3: RECOMMEND
+  AI generates structured allocation with:
+  - Vault selection + percentage allocation (must sum to 100%)
+  - Per-vault reasoning
+  - Risk factors + warnings
+  - Expected APY calculation
+
+PHASE 4: EXECUTE
+  For each allocation:
+  1. Get quote from Composer (li.quest/v1/quote)
+  2. Approve ERC-20 token spending
+  3. Execute deposit transaction
+  4. Track progress in real-time UI
+
+PHASE 5: MONITOR
+  Fetch positions via portfolio API
+  Display in dashboard with yield charts
+  Suggest rebalancing when better opportunities appear
+```
+
+## LI.FI Earn API Integration
+
+YieldPilot uses **all 7 LI.FI Earn endpoints** across both services:
+
+### Earn Data API (earn.li.fi — no auth required)
+
+| Endpoint | Usage in YieldPilot |
+|----------|-------------------|
+| `GET /v1/earn/vaults` | Vault discovery with pagination (nextCursor), filtering by chainId. Fetches full vault universe for AI analysis. Cached 5 min server-side. |
+| `GET /v1/earn/vaults/:network/:address` | Single vault detail for deep-dive information |
+| `GET /v1/earn/chains` | Populates supported chain list for landing page stats. Cached 1 hour. |
+| `GET /v1/earn/protocols` | Populates protocol count and metadata. Cached 1 hour. |
+| `GET /v1/earn/portfolio/:addr/positions` | Fetches user's existing DeFi positions for asset scan and dashboard. Cached 1 min. |
+
+### Composer API (li.quest — API key required)
+
+| Endpoint | Usage in YieldPilot |
+|----------|-------------------|
+| `GET /v1/quote` (deposit) | Builds deposit transactions: fromToken (USDC) → toToken (vault address). Handles swap + bridge + deposit in one tx. |
+| `GET /v1/quote` (redeem) | Builds withdrawal transactions for vault exits (vault token → underlying). |
+
+### API Integration Details
+
+- **Server-side proxying** — All API keys (Composer + OpenAI) stay in Next.js API routes, never exposed to the browser
+- **Pagination handling** — Uses `nextCursor` to iterate through all 672+ vaults, capped at 500 for AI context window
+- **Null-safe APY handling** — `apy7d` and `apy.reward` can be null; always uses fallback values
+- **TVL string parsing** — `analytics.tvl.usd` is a string in the API; parsed to number for filtering and display
+- **isTransactional check** — Only vaults with `isTransactional === true` are included in strategies
+
+## AI Strategy Engine
+
+The AI doesn't just sort by APY. It applies structured risk-based filtering before sending candidates to the LLM:
+
+### Risk Profile Filtering Rules
+
+| Dimension | Conservative | Balanced | Aggressive |
+|-----------|-------------|----------|------------|
+| Tags | Stablecoin only | Stablecoin + single | All |
+| Min TVL | $10M+ | $1M+ | No limit |
+| Protocols | Aave, Morpho, Spark | Mainstream | All |
+| Min vaults | 3+ vaults, 2+ chains | 2+ vaults | Can concentrate |
+| APY preference | Stability (30d avg) | Balanced | Highest total first |
+| Chain preference | User's current chain | User's current chain | User's current chain |
+
+### AI Output Structure
+
+Every strategy includes:
+- **Strategy name** — AI-generated descriptive name
+- **Risk score** — 1-10 scale
+- **Expected APY** — Weighted average across allocations
+- **Per-vault allocation** — Percentage, amount, vault address, chain, protocol
+- **Per-vault reasoning** — Why this vault was selected
+- **Risk factors** — Positive diversification signals
+- **Warnings** — Potential risk disclosures
+
+### Transparency
+
+The AI's reasoning is fully visible in the UI:
+- "Why this vault" — each allocation has a human-readable explanation
+- Risk factors panel — shows what makes the strategy safer
+- Warnings panel — discloses any potential risks
+- Users can review and adjust before executing
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 14 (App Router, TypeScript) |
+| **AI** | OpenAI GPT-4o-mini (strategy engine) |
+| **DeFi Data** | LI.FI Earn Data API (earn.li.fi) |
+| **DeFi Execution** | LI.FI Composer (li.quest) |
+| **Wallet** | wagmi v2 + RainbowKit |
+| **Styling** | Tailwind CSS + shadcn/ui |
+| **Animation** | Framer Motion |
+| **Charts** | Recharts |
+| **Deploy** | Vercel |
+
+## Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| **Landing** | `/` | Brand page with live stats (vault count, max APY, chains, protocols), hero CTA, feature cards |
+| **Strategy Engine** | `/app` | Core 3-step flow: asset scan → risk select → AI strategy generation + comparison + execution |
+| **Dashboard** | `/app/dashboard` | Portfolio overview, position cards, 30d yield chart, AI rebalancing suggestions |
 
 ## Getting Started
 
@@ -91,12 +208,13 @@ cd yieldpilot
 # Install
 npm install
 
-# Configure
-cp .env.example .env.local
-# Edit .env.local with your API keys:
-#   LIFI_COMPOSER_API_KEY=   (from https://portal.li.fi/)
-#   OPENAI_API_KEY=          (from OpenAI)
-#   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=demo
+# Configure environment
+cat > .env.local << 'EOF'
+LIFI_COMPOSER_API_KEY=your_key_from_portal_li_fi
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+EOF
 
 # Run
 npm run dev
@@ -104,22 +222,63 @@ npm run dev
 
 Open http://localhost:3000
 
-## AI Strategy Engine
+### Environment Variables
 
-The AI doesn't just sort by APY. It applies risk-based filtering rules:
+| Variable | Required | Source |
+|----------|----------|--------|
+| `LIFI_COMPOSER_API_KEY` | Yes | [LI.FI Partner Portal](https://portal.li.fi/) |
+| `OPENAI_API_KEY` | Yes | [OpenAI](https://platform.openai.com/api-keys) or compatible proxy |
+| `OPENAI_BASE_URL` | No | Defaults to `https://api.openai.com/v1`. Set for OpenAI-compatible proxies. |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Yes | [Reown (WalletConnect)](https://cloud.reown.com/) |
 
-| Dimension | Conservative | Balanced | Aggressive |
-|-----------|-------------|----------|------------|
-| Tags | Stablecoin only | Stablecoin + single | All |
-| Min TVL | $10M+ | $1M+ | No limit |
-| Protocols | Aave, Morpho, Spark | Mainstream | All |
-| Diversification | 3+ vaults, 2+ chains | 2+ vaults | Can concentrate |
-| APY preference | Stability (30d avg) | Balanced | Highest first |
+## Project Structure
 
-Every allocation includes:
-- Per-vault reasoning ("why this vault")
-- Risk factors and warnings
-- Transparent AI analysis
+```
+src/
+├── app/
+│   ├── page.tsx                          # Landing page
+│   ├── layout.tsx                        # Root layout with providers
+│   ├── providers.tsx                     # Wagmi + RainbowKit + QueryClient
+│   ├── app/
+│   │   ├── page.tsx                      # Strategy Engine (core)
+│   │   ├── layout.tsx                    # App layout with nav
+│   │   └── dashboard/page.tsx            # Portfolio Dashboard
+│   └── api/
+│       ├── vaults/route.ts               # Earn Data API proxy
+│       ├── chains/route.ts               # Earn Data API proxy
+│       ├── protocols/route.ts            # Earn Data API proxy
+│       ├── portfolio/[address]/route.ts  # Earn Data API proxy
+│       ├── strategy/route.ts             # AI strategy generation
+│       └── quote/route.ts               # Composer proxy (protects API key)
+├── lib/
+│   ├── types.ts                          # All TypeScript interfaces
+│   ├── earn-api.ts                       # Earn Data API client
+│   ├── ai-strategy.ts                    # AI strategy engine + risk filters
+│   └── wagmi-config.ts                   # Wallet configuration
+├── hooks/
+│   └── use-portfolio.ts                  # Portfolio data hook
+└── components/
+    ├── landing/                          # Hero, stats ticker, feature cards
+    ├── strategy/                         # Asset scan, risk selector, results, execution
+    ├── dashboard/                        # Portfolio summary, positions, charts
+    └── shared/                           # Nav, loading animation, connect prompt
+```
+
+## What's Next
+
+- Auto-rebalancing execution (currently shows suggestions only)
+- Historical performance tracking with database persistence
+- Multi-wallet portfolio aggregation
+- Mobile-responsive design
+- Withdrawal flow via Composer redeem
+
+## Team
+
+Solo developer — [Novar](https://x.com/wab_hsu)
+
+## License
+
+MIT
 
 ---
 
