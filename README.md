@@ -49,6 +49,15 @@ DeFi yield is fragmented. Users must manually compare APYs across 20+ protocols 
 - 30-day yield performance chart
 - AI rebalancing suggestions when better opportunities appear
 
+**MCP Server (Model Context Protocol)**
+- Exposes vault discovery, strategy generation, and portfolio tracking as MCP tools
+- Any AI agent (Claude Code, Cursor, etc.) can programmatically access YieldPilot's DeFi yield capabilities
+- 3 tools: `discover_vaults`, `generate_strategy`, `check_portfolio`
+
+**Claude Code Skill (`/yieldpilot`)**
+- Slash command for conversational DeFi yield management directly in Claude Code
+- Search vaults, generate strategies, check portfolios via natural language
+
 ### Integration Depth
 
 | Metric | Value |
@@ -59,6 +68,7 @@ DeFi yield is fragmented. Users must manually compare APYs across 20+ protocols 
 | Supported protocols | **11** (Morpho, Aave, Euler, Pendle, Ethena, etc.) |
 | Risk profiles | **3** (Conservative, Balanced, Aggressive) |
 | AI filtering dimensions | **5** (tags, TVL, protocol, diversification, APY trend) |
+| Access interfaces | **4** (Web App, API Routes, MCP Server, Claude Code Skill) |
 
 ## Architecture
 
