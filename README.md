@@ -264,6 +264,53 @@ src/
     └── shared/                           # Nav, loading animation, connect prompt
 ```
 
+## MCP Server (Model Context Protocol)
+
+YieldPilot exposes its core capabilities as an MCP server, allowing any AI agent (Claude Code, Cursor, etc.) to discover vaults, generate strategies, and check portfolios programmatically.
+
+### Available Tools
+
+| Tool | Description | Auth Required |
+|------|-------------|---------------|
+| `discover_vaults` | Search and filter vaults by chain, APY, TVL, protocol, tags | None |
+| `generate_strategy` | AI-powered yield strategy generation with risk profiling | `OPENAI_API_KEY` |
+| `check_portfolio` | Check a wallet's DeFi yield positions | None |
+
+### Setup
+
+Add to your MCP client config (e.g., `~/.claude/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "yieldpilot": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/server.ts"],
+      "cwd": "/path/to/yieldpilot",
+      "env": {
+        "OPENAI_API_KEY": "your-openai-key"
+      }
+    }
+  }
+}
+```
+
+### Example Usage in Claude Code
+
+```
+> Use YieldPilot to find the top stablecoin vaults on Base with APY > 3%
+
+> Generate a conservative yield strategy for $5000
+
+> Check portfolio positions for 0x4568b760c55FAEA0129139b863124f19962B9cDE
+```
+
+### Run Standalone
+
+```bash
+npm run mcp
+```
+
 ## What's Next
 
 - Auto-rebalancing execution (currently shows suggestions only)
