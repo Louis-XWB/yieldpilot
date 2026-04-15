@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "yieldpilot": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/server.ts"],
+      "cwd": "/path/to/yieldpilot",
+      "env": {
+        "OPENAI_API_KEY": "your-openai-key",
+        "OPENAI_BASE_URL": "https://api.openai.com/v1"
+      }
+    }
+  }
+}
