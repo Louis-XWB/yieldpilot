@@ -70,6 +70,23 @@ DeFi yield is fragmented. Users must manually compare APYs across 20+ protocols 
 | AI filtering dimensions | **5** (tags, TVL, protocol, diversification, APY trend) |
 | Access interfaces | **4** (Web App, API Routes, MCP Server, Claude Code Skill) |
 
+## Screenshots
+
+### Asset Scan + Risk Profile
+![Asset Scan](./public/screenshots/yieldpilot1.png)
+
+### AI Strategy Result
+![Strategy Result](./public/screenshots/yieldpilot2.png)
+
+### AI Analysis + Execute
+![AI Analysis](./public/screenshots/yieldpilot3.png)
+
+### Strategy Comparison (3 Risk Levels)
+![Strategy Comparison](./public/screenshots/yieldpilot4.png)
+
+### Portfolio Dashboard (Real Positions)
+![Dashboard](./public/screenshots/yieldpilot5.png)
+
 ## Architecture
 
 ```
